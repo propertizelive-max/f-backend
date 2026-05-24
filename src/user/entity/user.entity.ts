@@ -29,6 +29,7 @@ export class User {
               email!: string;
 
               @Column({
+                            nullable: true,
                             select: false,
               })
               password!: string;
@@ -39,6 +40,22 @@ export class User {
                             default: UserRole.USER,
               })
               role!: UserRole;
+
+              //  google 
+              @Column({
+                            nullable: true,
+              })
+              googleId!: string;
+
+              @Column({
+                            nullable: true,
+              })
+              picture!: string;
+
+              @Column({
+                            default: 'local',
+              })
+              provider!: string;
 
               @CreateDateColumn()
               createdAt!: Date;
