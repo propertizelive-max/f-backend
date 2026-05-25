@@ -1,6 +1,7 @@
 import { CreateUserDto } from './dto/create-yser-dto';
 import { UserService } from './user.service';
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
@@ -10,5 +11,12 @@ export class UserController {
               async createUser(@Body() createUserDto: CreateUserDto) {
                             await this.UserService.Create(createUserDto);
                             return { Message: "User Created Successfully" }
+              }
+
+              @UseGuards(AuthGuard('jwt'))
+              @Get('profile')
+              getProfile(@Req() req: any) {
+
+                            return req.user;
               }
 }
