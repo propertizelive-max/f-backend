@@ -1,62 +1,44 @@
 import {
-              Entity,
-              PrimaryGeneratedColumn,
-              Column,
-              CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
 } from 'typeorm';
+import { Role } from '../../common/enums/role.enum';
 
-export enum UserRole {
-              USER = 'user',
-              ADMIN = 'admin',
-}
+// backward-compat alias so existing imports of UserRole still compile
+export { Role as UserRole };
 
 @Entity('users')
 export class User {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
-              @PrimaryGeneratedColumn('uuid')
-              id!: string;
+  @Column({ type: 'varchar', length: 100 })
+  name!: string;
 
-              @Column({
-                            type: 'varchar',
-                            length: 100,
-              })
-              name!: string;
+  @Column({ type: 'varchar', unique: true })
+  email!: string;
 
-              @Column({
-                            type: 'varchar',
-                            unique: true,
-              })
-              email!: string;
+  @Column({ nullable: true, select: false })
+  password!: string;
 
-              @Column({
-                            nullable: true,
-                            select: false,
-              })
-              password!: string;
+  @Column({
+    type: 'enum',
+    enum: Role,
+    default: Role.USER,
+  })
+  role!: Role;
 
-              @Column({
-                            type: 'enum',
-                            enum: UserRole,
-                            default: UserRole.USER,
-              })
-              role!: UserRole;
+  @Column({ nullable: true })
+  googleId!: string;
 
-              //  google 
-              @Column({
-                            nullable: true,
-              })
-              googleId!: string;
+  @Column({ nullable: true })
+  picture!: string;
 
-              @Column({
-                            nullable: true,
-              })
-              picture!: string;
+  @Column({ default: 'local' })
+  provider!: string;
 
-              @Column({
-                            default: 'local',
-              })
-              provider!: string;
-
-              @CreateDateColumn()
-              createdAt!: Date;
+  @CreateDateColumn()
+  createdAt!: Date;
 }
