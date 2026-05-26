@@ -7,6 +7,9 @@ import { UserModule } from './user/user.module';
 import { User } from './user/entity/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { MediaModule } from './media/media.module';
+import { Media } from './media/entity/media.entity';
+
 
 
 
@@ -24,7 +27,7 @@ import { AdminModule } from './admin/admin.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [User],
+        entities: [User, Media],
         synchronize: true // user synchronize flase for production
 
       }),
@@ -33,6 +36,7 @@ import { AdminModule } from './admin/admin.module';
     UserModule,
     AuthModule,
     AdminModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
