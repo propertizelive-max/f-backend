@@ -7,7 +7,7 @@ export interface UploadedFile {
 }
 
 export interface IStorageProvider {
-  upload(file: Express.Multer.File): Promise<UploadedFile>;
+  upload(file: Express.Multer.File, folder?: string): Promise<UploadedFile>;
   delete(key: string): Promise<void>;
   getUrl(key: string): string;
 }

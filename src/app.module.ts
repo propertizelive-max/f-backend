@@ -9,9 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { MediaModule } from './media/media.module';
 import { Media } from './media/entity/media.entity';
-
-
-
+import { CategoriesModule } from './categories/categories.module';
+import { Category } from './categories/entity/category.entity';
 
 @Module({
   imports: [
@@ -27,9 +26,8 @@ import { Media } from './media/entity/media.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [User, Media],
-        synchronize: true // user synchronize flase for production
-
+        entities: [User, Media, Category],
+        synchronize: true, // disable in production
       }),
       inject: [ConfigService],
     }),
@@ -37,8 +35,9 @@ import { Media } from './media/entity/media.entity';
     AuthModule,
     AdminModule,
     MediaModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

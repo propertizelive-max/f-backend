@@ -25,11 +25,17 @@ export class LocalStorageProvider implements IStorageProvider {
     }
   }
 
-  async upload(file: Express.Multer.File): Promise<UploadedFile> {
+  async upload(file: Express.Multer.File, folder?: string): Promise<UploadedFile> {
     const ext = extname(file.originalname);
-    const key = `${randomUUID()}${ext}`;
-    const filePath = join(this.uploadDir, key);
+    const filename = `${randomUUID()}${ext}`;
+    const key = folder ? `${folder}/${filename}` : filename;
+    const targetDir = folder ? join(this.uploadDir, folder) : this.uploadDir;
 
+    if (!existsSync(targetDir)) {
+      mkdirSync(targetDir, { recursive: true });
+    }
+
+    const filePath = join(targetDir, filename);
     await writeFile(filePath, file.buffer);
     this.logger.log(`File saved: ${filePath}`);
 

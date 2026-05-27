@@ -9,8 +9,8 @@ export class StorageService {
     private readonly provider: IStorageProvider,
   ) {}
 
-  upload(file: Express.Multer.File): Promise<UploadedFile> {
-    return this.provider.upload(file);
+  upload(file: Express.Multer.File, folder?: string): Promise<UploadedFile> {
+    return this.provider.upload(file, folder);
   }
 
   delete(key: string): Promise<void> {

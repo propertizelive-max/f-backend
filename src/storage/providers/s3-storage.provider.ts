@@ -33,14 +33,15 @@ export class S3StorageProvider implements IStorageProvider {
     // });
   }
 
-  async upload(_file: Express.Multer.File): Promise<UploadedFile> {
+  async upload(_file: Express.Multer.File, _folder?: string): Promise<UploadedFile> {
     // const ext = extname(_file.originalname);
-    // const key = `${randomUUID()}${ext}`;
+    // const filename = `${randomUUID()}${ext}`;
+    // const key = _folder ? `${_folder}/${filename}` : filename;
     // const upload = new Upload({
     //   client: this.s3Client,
     //   params: {
     //     Bucket: this.bucketName,
-    //     Key: key,
+    //     Key: key,           // folder prefix becomes the S3 path prefix
     //     Body: _file.buffer,
     //     ContentType: _file.mimetype,
     //     ACL: 'public-read',
