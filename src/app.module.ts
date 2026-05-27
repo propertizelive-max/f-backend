@@ -11,6 +11,8 @@ import { MediaModule } from './media/media.module';
 import { Media } from './media/entity/media.entity';
 import { CategoriesModule } from './categories/categories.module';
 import { Category } from './categories/entity/category.entity';
+import { ProductsModule } from './products/products.module';
+import { Product } from './products/entity/product.entity';
 
 @Module({
   imports: [
@@ -26,7 +28,7 @@ import { Category } from './categories/entity/category.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [User, Media, Category],
+        entities: [User, Media, Category, Product],
         synchronize: true, // disable in production
       }),
       inject: [ConfigService],
@@ -36,6 +38,7 @@ import { Category } from './categories/entity/category.entity';
     AdminModule,
     MediaModule,
     CategoriesModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
