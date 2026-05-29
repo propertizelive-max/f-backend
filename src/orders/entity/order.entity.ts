@@ -71,13 +71,28 @@ export class Order {
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   orderStatus: OrderStatus;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: decimalTransformer })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: decimalTransformer,
+  })
   productAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: decimalTransformer })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: decimalTransformer,
+  })
   deliveryCharge: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: decimalTransformer })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: decimalTransformer,
+  })
   totalAmount: number;
 
   @Index()
@@ -86,4 +101,13 @@ export class Order {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ type: 'text', nullable: true })
+  cancelReason: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  cancelledAt: Date | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  cancelledBy: string | null;
 }

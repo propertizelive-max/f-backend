@@ -39,7 +39,11 @@ export class CartController {
 
   @Get()
   @ApiOperation({ summary: 'Get my cart with all items and totals' })
-  @ApiResponse({ status: 200, description: 'Cart retrieved', type: CartResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Cart retrieved',
+    type: CartResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — USER role required' })
   async getCart(@CurrentUser('id') userId: string): Promise<CartResponseDto> {
@@ -50,9 +54,19 @@ export class CartController {
   // ─── Add Item ─────────────────────────────────────────────────────────────
 
   @Post('items')
-  @ApiOperation({ summary: 'Add a product to cart (increments quantity if already present)' })
-  @ApiResponse({ status: 201, description: 'Item added, updated cart returned', type: CartResponseDto })
-  @ApiResponse({ status: 400, description: 'Product unavailable, insufficient stock, or cart limit reached' })
+  @ApiOperation({
+    summary: 'Add a product to cart (increments quantity if already present)',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Item added, updated cart returned',
+    type: CartResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Product unavailable, insufficient stock, or cart limit reached',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — USER role required' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -68,7 +82,11 @@ export class CartController {
 
   @Patch('items/:itemId')
   @ApiOperation({ summary: 'Update quantity of a cart item' })
-  @ApiResponse({ status: 200, description: 'Quantity updated, updated cart returned', type: CartResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Quantity updated, updated cart returned',
+    type: CartResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Quantity exceeds available stock' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — not your cart item' })
@@ -87,7 +105,11 @@ export class CartController {
   @Delete('items/:itemId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Remove a specific item from cart' })
-  @ApiResponse({ status: 200, description: 'Item removed, updated cart returned', type: CartResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Item removed, updated cart returned',
+    type: CartResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — not your cart item' })
   @ApiResponse({ status: 404, description: 'Cart item not found' })
@@ -104,7 +126,11 @@ export class CartController {
   @Delete('clear')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Remove all items from cart' })
-  @ApiResponse({ status: 200, description: 'Cart cleared', type: CartResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Cart cleared',
+    type: CartResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — USER role required' })
   async clearCart(@CurrentUser('id') userId: string): Promise<CartResponseDto> {

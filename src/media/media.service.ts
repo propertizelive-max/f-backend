@@ -19,7 +19,10 @@ export class MediaService {
     this.storageType = configService.get<string>('STORAGE_TYPE', 'local');
   }
 
-  async uploadSingle(file: Express.Multer.File, uploadedById?: string): Promise<Media> {
+  async uploadSingle(
+    file: Express.Multer.File,
+    uploadedById?: string,
+  ): Promise<Media> {
     const uploaded = await this.storageService.upload(file);
 
     const media = this.mediaRepository.create({
@@ -35,11 +38,18 @@ export class MediaService {
     return this.mediaRepository.save(media);
   }
 
-  async uploadBulk(files: Express.Multer.File[], uploadedById?: string): Promise<Media[]> {
-    return Promise.all(files.map((file) => this.uploadSingle(file, uploadedById)));
+  async uploadBulk(
+    files: Express.Multer.File[],
+    uploadedById?: string,
+  ): Promise<Media[]> {
+    return Promise.all(
+      files.map((file) => this.uploadSingle(file, uploadedById)),
+    );
   }
 
-  async findAll(pagination: PaginationDto): Promise<{ data: Media[]; total: number; page: number; limit: number }> {
+  async findAll(
+    pagination: PaginationDto,
+  ): Promise<{ data: Media[]; total: number; page: number; limit: number }> {
     const [data, total] = await this.mediaRepository.findAndCount({
       order: { createdAt: 'DESC' },
       skip: pagination.skip,

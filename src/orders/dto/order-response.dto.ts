@@ -44,6 +44,9 @@ export class OrderResponseDto {
   @ApiProperty({ type: [OrderItemResponseDto] }) items: OrderItemResponseDto[];
   @ApiProperty() createdAt: Date;
   @ApiProperty() updatedAt: Date;
+  @ApiPropertyOptional() cancelReason: string | null;
+  @ApiPropertyOptional() cancelledAt: Date | null;
+  @ApiPropertyOptional() cancelledBy: string | null;
 
   static from(order: Order): OrderResponseDto {
     const dto = new OrderResponseDto();
@@ -65,6 +68,9 @@ export class OrderResponseDto {
     dto.items = (order.items ?? []).map(OrderItemResponseDto.from);
     dto.createdAt = order.createdAt;
     dto.updatedAt = order.updatedAt;
+    dto.cancelReason = order.cancelReason ?? null;
+    dto.cancelledAt = order.cancelledAt ?? null;
+    dto.cancelledBy = order.cancelledBy ?? null;
     return dto;
   }
 }

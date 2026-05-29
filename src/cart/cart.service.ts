@@ -27,7 +27,7 @@ export class CartService {
     private readonly cartItemRepository: Repository<CartItem>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) { }
+  ) {}
 
   async getCart(userId: string): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId);
@@ -76,7 +76,9 @@ export class CartService {
         quantity: dto.quantity,
       });
       await this.cartItemRepository.save(item);
-      this.logger.log(`Cart item added: product ${dto.productId} to cart ${cart.id}`);
+      this.logger.log(
+        `Cart item added: product ${dto.productId} to cart ${cart.id}`,
+      );
     }
 
     return this.loadCartWithItems(cart.id);

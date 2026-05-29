@@ -4,7 +4,10 @@ import { existsSync, mkdirSync } from 'fs';
 import { writeFile, unlink } from 'fs/promises';
 import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
-import { IStorageProvider, UploadedFile } from '../interfaces/storage-provider.interface';
+import {
+  IStorageProvider,
+  UploadedFile,
+} from '../interfaces/storage-provider.interface';
 
 @Injectable()
 export class LocalStorageProvider implements IStorageProvider {
@@ -14,7 +17,10 @@ export class LocalStorageProvider implements IStorageProvider {
 
   constructor(private readonly configService: ConfigService) {
     this.uploadDir = configService.get<string>('UPLOAD_DIR', './uploads');
-    this.baseUrl = configService.get<string>('APP_BASE_URL', 'http://localhost:3000');
+    this.baseUrl = configService.get<string>(
+      'APP_BASE_URL',
+      'http://localhost:3000',
+    );
     this.ensureUploadDir();
   }
 
@@ -25,7 +31,10 @@ export class LocalStorageProvider implements IStorageProvider {
     }
   }
 
-  async upload(file: Express.Multer.File, folder?: string): Promise<UploadedFile> {
+  async upload(
+    file: Express.Multer.File,
+    folder?: string,
+  ): Promise<UploadedFile> {
     const ext = extname(file.originalname);
     const filename = `${randomUUID()}${ext}`;
     const key = folder ? `${folder}/${filename}` : filename;

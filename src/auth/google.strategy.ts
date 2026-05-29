@@ -47,53 +47,49 @@ import { User, UserRole } from '../user/entity/user.entity';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+  constructor(
+    private configService: ConfigService,
 
-              constructor(
-                            private configService: ConfigService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {
+    super({
+      clientID: configService.get<string>('GOOGLE_CLIENT_ID')!,
+      clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET')!,
+      callbackURL: 'http://localhost:3000/auth/google/callback',
+      scope: ['email', 'profile'],
+    });
+  }
 
-                            @InjectRepository(User)
-                            private readonly userRepository: Repository<User>,
-              ) {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: VerifyCallback,
+  ): Promise<any> {
+    const { name, emails, photos, id } = profile;
 
-                            super({
-                                          clientID: configService.get<string>('GOOGLE_CLIENT_ID')!,
-                                          clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET')!,
-                                          callbackURL: 'http://localhost:3000/auth/google/callback',
-                                          scope: ['email', 'profile'],
-                            });
-              }
+    const email = emails[0].value;
 
-              async validate(
-                            accessToken: string,
-                            refreshToken: string,
-                            profile: any,
-                            done: VerifyCallback,
-              ): Promise<any> {
+    // check existing user
+    let user = await this.userRepository.findOne({
+      where: { email },
+    });
 
-                            const { name, emails, photos, id } = profile;
+    // create new user if not exists
+    if (!user) {
+      user = this.userRepository.create({
+        name: name.givenName,
+        email: email,
+        googleId: id,
+        picture: photos[0].value,
+        provider: 'google',
+        role: UserRole.USER,
+      });
 
-                            const email = emails[0].value;
+      await this.userRepository.save(user);
+    }
 
-                            // check existing user
-                            let user = await this.userRepository.findOne({
-                                          where: { email },
-                            });
-
-                            // create new user if not exists
-                            if (!user) {
-
-                                          user = this.userRepository.create({
-                                                        name: name.givenName,
-                                                        email: email,
-                                                        googleId: id,
-                                                        picture: photos[0].value,
-                                                        provider: 'google',
-                                                        role: UserRole.USER,
-                                          });
-
-                                          await this.userRepository.save(user);
-                            }
-
-                            done(null, user);
-              }
+    done(null, user);
+  }
 }

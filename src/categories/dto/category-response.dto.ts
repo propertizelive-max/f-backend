@@ -16,11 +16,17 @@ export class CategoryResponseDto {
   @Expose()
   slug: string;
 
-  @ApiPropertyOptional({ example: 'Ergonomic office chairs for modern workspaces', nullable: true })
+  @ApiPropertyOptional({
+    example: 'Ergonomic office chairs for modern workspaces',
+    nullable: true,
+  })
   @Expose()
   description: string | null;
 
-  @ApiPropertyOptional({ example: 'http://localhost:3000/uploads/categories/abc.jpg', nullable: true })
+  @ApiPropertyOptional({
+    example: 'http://localhost:3000/uploads/categories/abc.jpg',
+    nullable: true,
+  })
   @Expose()
   imageUrl: string | null;
 

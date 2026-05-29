@@ -26,7 +26,10 @@ export class ProductsByCategoryController {
   @Get(':categoryId/products')
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Get products by category' })
-  @ApiResponse({ status: 200, description: 'Paginated list of products for the category' })
+  @ApiResponse({
+    status: 200,
+    description: 'Paginated list of products for the category',
+  })
   @ApiResponse({ status: 400, description: 'Invalid UUID' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   async findByCategory(

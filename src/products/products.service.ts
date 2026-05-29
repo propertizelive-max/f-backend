@@ -185,21 +185,26 @@ export class ProductsService {
       product.title = dto.title;
     }
 
-    if (dto.description !== undefined) product.description = dto.description ?? null;
+    if (dto.description !== undefined)
+      product.description = dto.description ?? null;
     if (dto.price !== undefined) product.price = dto.price;
-    if (dto.discountPrice !== undefined) product.discountPrice = dto.discountPrice ?? null;
+    if (dto.discountPrice !== undefined)
+      product.discountPrice = dto.discountPrice ?? null;
     if (dto.stock !== undefined) product.stock = dto.stock;
     if (dto.sku !== undefined) product.sku = dto.sku ?? null;
     if (dto.material !== undefined) product.material = dto.material ?? null;
     if (dto.status !== undefined) product.status = dto.status;
     if (dto.color !== undefined) product.color = dto.color ?? null;
-    if (dto.dimensions !== undefined) product.dimensions = dto.dimensions ?? null;
+    if (dto.dimensions !== undefined)
+      product.dimensions = dto.dimensions ?? null;
     if (dto.weight !== undefined) product.weight = dto.weight ?? null;
     if (dto.finish !== undefined) product.finish = dto.finish ?? null;
     if (dto.style !== undefined) product.style = dto.style ?? null;
-    if (dto.careInstructions !== undefined) product.careInstructions = dto.careInstructions ?? null;
+    if (dto.careInstructions !== undefined)
+      product.careInstructions = dto.careInstructions ?? null;
     if (dto.warranty !== undefined) product.warranty = dto.warranty ?? null;
-    if (dto.imageUrls !== undefined) product.imageUrls = [...new Set(dto.imageUrls)];
+    if (dto.imageUrls !== undefined)
+      product.imageUrls = [...new Set(dto.imageUrls)];
     if (dto.categoryId !== undefined) product.categoryId = dto.categoryId;
 
     const saved = await this.productRepo.save(product);
@@ -217,7 +222,9 @@ export class ProductsService {
     const product = await this.findOneOrFail(id);
     product.isFeatured = !product.isFeatured;
     await this.productRepo.save(product);
-    this.logger.log(`Product ${product.id} isFeatured → ${String(product.isFeatured)}`);
+    this.logger.log(
+      `Product ${product.id} isFeatured → ${String(product.isFeatured)}`,
+    );
     return this.findOneOrFail(id);
   }
 
@@ -225,7 +232,9 @@ export class ProductsService {
     const product = await this.findOneOrFail(id);
     product.isActive = !product.isActive;
     await this.productRepo.save(product);
-    this.logger.log(`Product ${product.id} isActive → ${String(product.isActive)}`);
+    this.logger.log(
+      `Product ${product.id} isActive → ${String(product.isActive)}`,
+    );
     return this.findOneOrFail(id);
   }
 
@@ -241,7 +250,10 @@ export class ProductsService {
     return product;
   }
 
-  private async assertSkuAvailable(sku: string, excludeId?: string): Promise<void> {
+  private async assertSkuAvailable(
+    sku: string,
+    excludeId?: string,
+  ): Promise<void> {
     const qb = this.productRepo
       .createQueryBuilder('product')
       .where('product.sku = :sku', { sku })
@@ -254,13 +266,20 @@ export class ProductsService {
   }
 
   private async assertCategoryExists(categoryId: string): Promise<void> {
-    const category = await this.categoryRepo.findOne({ where: { id: categoryId } });
+    const category = await this.categoryRepo.findOne({
+      where: { id: categoryId },
+    });
     if (!category) {
-      throw new NotFoundException(`Category with ID "${categoryId}" not found.`);
+      throw new NotFoundException(
+        `Category with ID "${categoryId}" not found.`,
+      );
     }
   }
 
-  private async generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
+  private async generateUniqueSlug(
+    title: string,
+    excludeId?: string,
+  ): Promise<string> {
     const base = this.slugify(title);
     let slug = base;
     let counter = 1;

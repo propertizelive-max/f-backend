@@ -1,6 +1,9 @@
 import { Injectable, Logger, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IStorageProvider, UploadedFile } from '../interfaces/storage-provider.interface';
+import {
+  IStorageProvider,
+  UploadedFile,
+} from '../interfaces/storage-provider.interface';
 
 /**
  * Migration checklist when enabling S3:
@@ -33,7 +36,10 @@ export class S3StorageProvider implements IStorageProvider {
     // });
   }
 
-  async upload(_file: Express.Multer.File, _folder?: string): Promise<UploadedFile> {
+  async upload(
+    _file: Express.Multer.File,
+    _folder?: string,
+  ): Promise<UploadedFile> {
     // const ext = extname(_file.originalname);
     // const filename = `${randomUUID()}${ext}`;
     // const key = _folder ? `${_folder}/${filename}` : filename;
@@ -50,17 +56,23 @@ export class S3StorageProvider implements IStorageProvider {
     // await upload.done();
     // this.logger.log(`Uploaded to S3: ${key}`);
     // return { key, url: this.getUrl(key), size: _file.size, mimeType: _file.mimetype, originalName: _file.originalname };
-    throw new NotImplementedException('S3StorageProvider is not yet configured — set STORAGE_TYPE=local or complete the migration checklist.');
+    throw new NotImplementedException(
+      'S3StorageProvider is not yet configured — set STORAGE_TYPE=local or complete the migration checklist.',
+    );
   }
 
   async delete(_key: string): Promise<void> {
     // await this.s3Client.send(new DeleteObjectCommand({ Bucket: this.bucketName, Key: _key }));
     // this.logger.log(`Deleted from S3: ${_key}`);
-    throw new NotImplementedException('S3StorageProvider is not yet configured.');
+    throw new NotImplementedException(
+      'S3StorageProvider is not yet configured.',
+    );
   }
 
   getUrl(_key: string): string {
     // return `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${_key}`;
-    throw new NotImplementedException('S3StorageProvider is not yet configured.');
+    throw new NotImplementedException(
+      'S3StorageProvider is not yet configured.',
+    );
   }
 }

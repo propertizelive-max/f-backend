@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { STORAGE_PROVIDER } from './constants/storage.constants';
-import type { IStorageProvider, UploadedFile } from './interfaces/storage-provider.interface';
+import type {
+  IStorageProvider,
+  UploadedFile,
+} from './interfaces/storage-provider.interface';
 
 @Injectable()
 export class StorageService {

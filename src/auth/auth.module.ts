@@ -9,28 +9,24 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 
 @Module({
-              imports: [ConfigModule, TypeOrmModule.forFeature([User]),
-                            JwtModule.registerAsync({
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([User]),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
 
-                                          imports: [ConfigModule],
+      inject: [ConfigService],
 
-                                          inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET_KEY'),
 
-                                          useFactory: async (
-                                                        configService: ConfigService,
-                                          ) => ({
-
-                                                        secret: configService.get<string>(
-                                                                      'JWT_ACCESS_TOKEN_SECRET_KEY',
-                                                        ),
-
-                                                        signOptions: {
-                                                                      expiresIn: '30m',
-                                                        },
-                                          }),
-                            }),
-              ],
-              controllers: [AuthController],
-              providers: [AuthService, GoogleStrategy, JwtStrategy]
+        signOptions: {
+          expiresIn: '30m',
+        },
+      }),
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [AuthService, GoogleStrategy, JwtStrategy],
 })
-export class AuthModule { }
+export class AuthModule {}

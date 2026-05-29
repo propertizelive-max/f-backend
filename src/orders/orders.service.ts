@@ -19,6 +19,8 @@ import { CheckoutDto } from './dto/checkout.dto';
 import { OrderStatus } from './enums/order-status.enum';
 import { PaymentStatus } from './enums/payment-status.enum';
 
+const CANCELLABLE_STATUSES = [OrderStatus.PENDING, OrderStatus.PROCESSING];
+
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
@@ -38,18 +40,26 @@ export class OrdersService {
     this.deliveryCharge = this.configService.get<number>('DELIVERY_CHARGE', 99);
   }
 
-  async checkout(userId: string, email: string, dto: CheckoutDto): Promise<Order> {
+  async checkout(
+    userId: string,
+    email: string,
+    dto: CheckoutDto,
+  ): Promise<Order> {
     const cart = await this.cartService.getCart(userId);
 
     if (!cart.items || cart.items.length === 0) {
-      throw new BadRequestException('Your cart is empty. Add items before checking out.');
+      throw new BadRequestException(
+        'Your cart is empty. Add items before checking out.',
+      );
     }
 
     for (const item of cart.items) {
       const product = item.product;
 
       if (!product) {
-        throw new BadRequestException('One or more cart items reference a deleted product.');
+        throw new BadRequestException(
+          'One or more cart items reference a deleted product.',
+        );
       }
 
       if (!product.isActive || product.status !== ProductStatus.ACTIVE) {
@@ -132,7 +142,11 @@ export class OrdersService {
     });
   }
 
-  async getOrderById(orderId: string, userId: string, userRole: Role): Promise<Order> {
+  async getOrderById(
+    orderId: string,
+    userId: string,
+    userRole: Role,
+  ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
       relations: { items: { product: true } },
@@ -149,13 +163,59 @@ export class OrdersService {
     return order;
   }
 
+  async cancelOrder(
+    orderId: string,
+    userId: string,
+    reason: string,
+  ): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: { items: { product: true } },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID "${orderId}" not found.`);
+    }
+    if (order.userId !== userId) {
+      throw new ForbiddenException('You do not have access to this order.');
+    }
+    if (!CANCELLABLE_STATUSES.includes(order.orderStatus)) {
+      throw new BadRequestException(
+        `Order cannot be cancelled in "${order.orderStatus}" status.`,
+      );
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      order.orderStatus = OrderStatus.CANCELLED;
+      order.cancelReason = reason;
+      order.cancelledAt = new Date();
+      order.cancelledBy = userId;
+      await manager.getRepository(Order).save(order);
+
+      for (const item of order.items) {
+        await manager
+          .getRepository(Product)
+          .increment({ id: item.productId }, 'stock', item.quantity);
+      }
+    });
+
+    this.logger.log(`Order ${orderId} cancelled by user ${userId}`);
+
+    return this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: { items: { product: true } },
+    }) as Promise<Order>;
+  }
+
   // Hook for future payment integration — called by PaymentModule webhook handler
   async updatePaymentStatus(
     orderId: string,
     paymentStatus: PaymentStatus,
     orderStatus: OrderStatus,
   ): Promise<Order> {
-    const order = await this.orderRepository.findOne({ where: { id: orderId } });
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
 
     if (!order) {
       throw new NotFoundException(`Order with ID "${orderId}" not found.`);

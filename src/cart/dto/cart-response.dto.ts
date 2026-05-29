@@ -18,11 +18,15 @@ export class CartResponseDto {
   @Type(() => CartItemResponseDto)
   items: CartItemResponseDto[];
 
-  @ApiProperty({ description: 'Total number of individual units across all items' })
+  @ApiProperty({
+    description: 'Total number of individual units across all items',
+  })
   @Expose()
   totalItems: number;
 
-  @ApiProperty({ description: 'Total price (uses discountPrice when available)' })
+  @ApiProperty({
+    description: 'Total price (uses discountPrice when available)',
+  })
   @Expose()
   totalPrice: number;
 

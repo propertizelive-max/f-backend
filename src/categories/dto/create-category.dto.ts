@@ -12,7 +12,10 @@ export class CreateCategoryDto {
   )
   name: string;
 
-  @ApiPropertyOptional({ example: 'Ergonomic office chairs for modern workspaces', maxLength: 1000 })
+  @ApiPropertyOptional({
+    example: 'Ergonomic office chairs for modern workspaces',
+    maxLength: 1000,
+  })
   @IsOptional()
   @IsString()
   @MaxLength(1000)

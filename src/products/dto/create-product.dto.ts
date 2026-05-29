@@ -27,7 +27,9 @@ export class CreateProductDto {
   )
   title: string;
 
-  @ApiPropertyOptional({ example: 'A comfortable ergonomic chair for long work sessions.' })
+  @ApiPropertyOptional({
+    example: 'A comfortable ergonomic chair for long work sessions.',
+  })
   @IsOptional()
   @IsString()
   @Transform(({ value }: { value: unknown }) =>
@@ -41,14 +43,21 @@ export class CreateProductDto {
   @Type(() => Number)
   price: number;
 
-  @ApiPropertyOptional({ example: 249.99, description: 'Must be less than price' })
+  @ApiPropertyOptional({
+    example: 249.99,
+    description: 'Must be less than price',
+  })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Type(() => Number)
   discountPrice?: number;
 
-  @ApiPropertyOptional({ example: 50, description: 'Stock quantity, must be >= 0', default: 0 })
+  @ApiPropertyOptional({
+    example: 50,
+    description: 'Stock quantity, must be >= 0',
+    default: 0,
+  })
   @IsOptional()
   @IsInt()
   @Min(0)
@@ -121,7 +130,9 @@ export class CreateProductDto {
   )
   style?: string;
 
-  @ApiPropertyOptional({ example: 'Wipe with a damp cloth. Avoid direct sunlight.' })
+  @ApiPropertyOptional({
+    example: 'Wipe with a damp cloth. Avoid direct sunlight.',
+  })
   @IsOptional()
   @IsString()
   @Transform(({ value }: { value: unknown }) =>
@@ -129,7 +140,10 @@ export class CreateProductDto {
   )
   careInstructions?: string;
 
-  @ApiPropertyOptional({ example: '2 years manufacturer warranty', maxLength: 200 })
+  @ApiPropertyOptional({
+    example: '2 years manufacturer warranty',
+    maxLength: 200,
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)
@@ -138,14 +152,18 @@ export class CreateProductDto {
   )
   warranty?: string;
 
-  @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', description: 'Category UUID' })
+  @ApiProperty({
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    description: 'Category UUID',
+  })
   @IsUUID()
   categoryId: string;
 
   @ApiProperty({
     type: [String],
     example: ['uploads/products/img1.webp', 'uploads/products/img2.webp'],
-    description: 'Product image URLs/paths. First image is the thumbnail. Min 1, max 10.',
+    description:
+      'Product image URLs/paths. First image is the thumbnail. Min 1, max 10.',
     minItems: 1,
     maxItems: 10,
   })
@@ -155,5 +173,4 @@ export class CreateProductDto {
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   imageUrls: string[];
-
 }

@@ -10,6 +10,8 @@ export class AddImageUrlsToProducts1748304000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE "products" DROP COLUMN IF EXISTS "imageUrls"`);
+    await queryRunner.query(
+      `ALTER TABLE "products" DROP COLUMN IF EXISTS "imageUrls"`,
+    );
   }
 }

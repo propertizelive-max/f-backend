@@ -8,10 +8,7 @@ import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, Product]),
-    CartModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Order, OrderItem, Product]), CartModule],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService],

@@ -5,18 +5,17 @@ import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
-              constructor(private readonly UserService: UserService) { }
+  constructor(private readonly UserService: UserService) {}
 
-              @Post('signin')
-              async createUser(@Body() createUserDto: CreateUserDto) {
-                            await this.UserService.Create(createUserDto);
-                            return { Message: "User Created Successfully" }
-              }
+  @Post('signin')
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    await this.UserService.Create(createUserDto);
+    return { Message: 'User Created Successfully' };
+  }
 
-              @UseGuards(AuthGuard('jwt'))
-              @Get('profile')
-              getProfile(@Req() req: any) {
-
-                            return req.user;
-              }
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
+  getProfile(@Req() req: any) {
+    return req.user;
+  }
 }

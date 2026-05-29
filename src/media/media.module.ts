@@ -6,10 +6,7 @@ import { MediaController } from './media.controller';
 import { MediaService } from './media.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Media]),
-    StorageModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Media]), StorageModule],
   controllers: [MediaController],
   providers: [MediaService],
   exports: [MediaService],

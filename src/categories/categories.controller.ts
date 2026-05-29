@@ -60,12 +60,23 @@ export class CategoriesController {
           example: 'Ergonomic office chairs for modern workspaces',
           maxLength: 1000,
         },
-        image: { type: 'string', format: 'binary', description: 'Category image (jpeg/png/webp/gif, max 5 MB)' },
+        image: {
+          type: 'string',
+          format: 'binary',
+          description: 'Category image (jpeg/png/webp/gif, max 5 MB)',
+        },
       },
     },
   })
-  @ApiResponse({ status: 201, description: 'Category created successfully', type: CategoryResponseDto })
-  @ApiResponse({ status: 400, description: 'Validation error or invalid image' })
+  @ApiResponse({
+    status: 201,
+    description: 'Category created successfully',
+    type: CategoryResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or invalid image',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — Admin role required' })
   @ApiResponse({ status: 409, description: 'Category name already exists' })
@@ -80,7 +91,9 @@ export class CategoriesController {
   // ─── Public: List ─────────────────────────────────────────────────────────
 
   @Get()
-  @ApiOperation({ summary: 'List categories with pagination, search, and filtering' })
+  @ApiOperation({
+    summary: 'List categories with pagination, search, and filtering',
+  })
   @ApiResponse({ status: 200, description: 'Paginated list of categories' })
   async findAll(
     @Query() query: CategoryQueryDto,
@@ -98,7 +111,11 @@ export class CategoriesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a category by ID' })
-  @ApiResponse({ status: 200, description: 'Category found', type: CategoryResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Category found',
+    type: CategoryResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Invalid UUID' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   async findOne(
@@ -122,14 +139,29 @@ export class CategoriesController {
       type: 'object',
       properties: {
         name: { type: 'string', example: 'Ergonomic Chair', maxLength: 150 },
-        description: { type: 'string', example: 'Updated description', maxLength: 1000 },
+        description: {
+          type: 'string',
+          example: 'Updated description',
+          maxLength: 1000,
+        },
         isActive: { type: 'boolean', example: true },
-        image: { type: 'string', format: 'binary', description: 'Replace category image (jpeg/png/webp/gif, max 5 MB)' },
+        image: {
+          type: 'string',
+          format: 'binary',
+          description: 'Replace category image (jpeg/png/webp/gif, max 5 MB)',
+        },
       },
     },
   })
-  @ApiResponse({ status: 200, description: 'Category updated', type: CategoryResponseDto })
-  @ApiResponse({ status: 400, description: 'Validation error or invalid image' })
+  @ApiResponse({
+    status: 200,
+    description: 'Category updated',
+    type: CategoryResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or invalid image',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — Admin role required' })
   @ApiResponse({ status: 404, description: 'Category not found' })

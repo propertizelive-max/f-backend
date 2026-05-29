@@ -1,6 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class UpdateCategoryDto {
   @ApiPropertyOptional({ example: 'Ergonomic Chair', maxLength: 150 })
@@ -13,7 +19,10 @@ export class UpdateCategoryDto {
   )
   name?: string;
 
-  @ApiPropertyOptional({ example: 'Premium ergonomic chairs for offices', maxLength: 1000 })
+  @ApiPropertyOptional({
+    example: 'Premium ergonomic chairs for offices',
+    maxLength: 1000,
+  })
   @IsOptional()
   @IsString()
   @MaxLength(1000)

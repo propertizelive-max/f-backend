@@ -6,14 +6,14 @@ import { CreateUserDto } from './dto/create-yser-dto';
 
 @Injectable()
 export class UserService {
-              constructor(
-                            @InjectRepository(User)
-                            private readonly userRepository: Repository<User>,
-              ) { }
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
-              // create user 
-              async Create(CreateUserDto: CreateUserDto): Promise<User> {
-                            const newUser = this.userRepository.create(CreateUserDto);
-                            return await this.userRepository.save(newUser);
-              }
+  // create user
+  async Create(CreateUserDto: CreateUserDto): Promise<User> {
+    const newUser = this.userRepository.create(CreateUserDto);
+    return await this.userRepository.save(newUser);
+  }
 }

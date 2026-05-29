@@ -46,7 +46,11 @@ export class ProductsController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a product (Admin only)' })
-  @ApiResponse({ status: 201, description: 'Product created', type: ProductResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Product created',
+    type: ProductResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — Admin role required' })
@@ -64,7 +68,9 @@ export class ProductsController {
 
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
-  @ApiOperation({ summary: 'List products with pagination, search, and filters' })
+  @ApiOperation({
+    summary: 'List products with pagination, search, and filters',
+  })
   @ApiResponse({ status: 200, description: 'Paginated product list' })
   async findAll(
     @Query() query: ProductQueryDto,
@@ -85,7 +91,11 @@ export class ProductsController {
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Get a product by ID' })
-  @ApiResponse({ status: 200, description: 'Product found', type: ProductResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Product found',
+    type: ProductResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Invalid UUID' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   async findOne(
@@ -104,7 +114,11 @@ export class ProductsController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Product updated', type: ProductResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Product updated',
+    type: ProductResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — Admin role required' })
@@ -141,7 +155,11 @@ export class ProductsController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle product featured status (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Featured status toggled', type: ProductResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Featured status toggled',
+    type: ProductResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — Admin role required' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -159,7 +177,11 @@ export class ProductsController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle product active status (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Active status toggled', type: ProductResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Active status toggled',
+    type: ProductResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — Admin role required' })
   @ApiResponse({ status: 404, description: 'Product not found' })

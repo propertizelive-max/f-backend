@@ -15,12 +15,18 @@ export enum SortOrder {
 }
 
 export class CategoryQueryDto extends PaginationDto {
-  @ApiPropertyOptional({ example: 'chair', description: 'Search by name or description' })
+  @ApiPropertyOptional({
+    example: 'chair',
+    description: 'Search by name or description',
+  })
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ enum: CategorySortBy, default: CategorySortBy.CREATED_AT })
+  @ApiPropertyOptional({
+    enum: CategorySortBy,
+    default: CategorySortBy.CREATED_AT,
+  })
   @IsOptional()
   @IsIn(Object.values(CategorySortBy))
   sortBy?: CategorySortBy = CategorySortBy.CREATED_AT;
@@ -30,7 +36,10 @@ export class CategoryQueryDto extends PaginationDto {
   @IsEnum(SortOrder)
   order?: SortOrder = SortOrder.DESC;
 
-  @ApiPropertyOptional({ example: true, description: 'Filter by active status' })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Filter by active status',
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }: { value: unknown }) => {

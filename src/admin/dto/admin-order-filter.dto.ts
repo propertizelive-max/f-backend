@@ -1,4 +1,10 @@
-import { IsDateString, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { OrderStatus } from '../../orders/enums/order-status.enum';
 import { PaymentStatus } from '../../orders/enums/payment-status.enum';

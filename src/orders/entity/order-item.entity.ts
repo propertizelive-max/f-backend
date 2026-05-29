@@ -22,7 +22,10 @@ export class OrderItem {
   @Column({ type: 'uuid' })
   orderId: string;
 
-  @ManyToOne(() => Order, (order) => order.items, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Order, (order) => order.items, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'orderId' })
   order: Order;
 
@@ -36,10 +39,20 @@ export class OrderItem {
   @Column({ type: 'int' })
   quantity: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: decimalTransformer })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: decimalTransformer,
+  })
   price: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, transformer: decimalTransformer })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: decimalTransformer,
+  })
   totalPrice: number;
 
   @CreateDateColumn()

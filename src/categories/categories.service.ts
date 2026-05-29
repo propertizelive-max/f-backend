@@ -47,9 +47,7 @@ export class CategoriesService {
     return saved;
   }
 
-  async findAll(
-    query: CategoryQueryDto,
-  ): Promise<PaginatedResponse<Category>> {
+  async findAll(query: CategoryQueryDto): Promise<PaginatedResponse<Category>> {
     const qb = this.categoryRepository.createQueryBuilder('category');
 
     if (query.search) {
@@ -61,7 +59,9 @@ export class CategoriesService {
     }
 
     if (query.isActive !== undefined) {
-      qb.andWhere('category.isActive = :isActive', { isActive: query.isActive });
+      qb.andWhere('category.isActive = :isActive', {
+        isActive: query.isActive,
+      });
     }
 
     const allowedSortFields: Record<string, string> = {
@@ -115,7 +115,10 @@ export class CategoriesService {
 
     if (file) {
       await this.deleteStoredImage(category.imageKey);
-      const uploaded = await this.storageService.upload(file, CATEGORIES_FOLDER);
+      const uploaded = await this.storageService.upload(
+        file,
+        CATEGORIES_FOLDER,
+      );
       category.imageUrl = uploaded.url;
       category.imageKey = uploaded.key;
     }

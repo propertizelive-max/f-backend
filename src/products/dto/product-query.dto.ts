@@ -26,7 +26,10 @@ export enum SortOrder {
 }
 
 export class ProductQueryDto extends PaginationDto {
-  @ApiPropertyOptional({ example: 'chair', description: 'Search by title or description' })
+  @ApiPropertyOptional({
+    example: 'chair',
+    description: 'Search by title or description',
+  })
   @IsOptional()
   @IsString()
   search?: string;
@@ -36,12 +39,18 @@ export class ProductQueryDto extends PaginationDto {
   @IsUUID()
   categoryId?: string;
 
-  @ApiPropertyOptional({ enum: ProductStatus, description: 'Filter by product status' })
+  @ApiPropertyOptional({
+    enum: ProductStatus,
+    description: 'Filter by product status',
+  })
   @IsOptional()
   @IsEnum(ProductStatus)
   status?: ProductStatus;
 
-  @ApiPropertyOptional({ example: true, description: 'Filter by featured status' })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Filter by featured status',
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }: { value: unknown }) => {
@@ -51,7 +60,10 @@ export class ProductQueryDto extends PaginationDto {
   })
   isFeatured?: boolean;
 
-  @ApiPropertyOptional({ example: true, description: 'Filter by active status (admin only)' })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Filter by active status (admin only)',
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }: { value: unknown }) => {
@@ -75,7 +87,10 @@ export class ProductQueryDto extends PaginationDto {
   @Type(() => Number)
   maxPrice?: number;
 
-  @ApiPropertyOptional({ enum: ProductSortBy, default: ProductSortBy.CREATED_AT })
+  @ApiPropertyOptional({
+    enum: ProductSortBy,
+    default: ProductSortBy.CREATED_AT,
+  })
   @IsOptional()
   @IsEnum(ProductSortBy)
   sortBy?: ProductSortBy = ProductSortBy.CREATED_AT;

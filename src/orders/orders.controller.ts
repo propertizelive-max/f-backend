@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -22,6 +23,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { OrdersService } from './orders.service';
 import { CheckoutDto } from './dto/checkout.dto';
+import { CancelOrderDto } from './dto/cancel-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 
 @ApiTags('Orders')
@@ -37,8 +39,15 @@ export class OrdersController {
   @HttpCode(HttpStatus.CREATED)
   @Roles(Role.USER)
   @ApiOperation({ summary: 'Checkout — create an order from cart items' })
-  @ApiResponse({ status: 201, description: 'Order created', type: OrderResponseDto })
-  @ApiResponse({ status: 400, description: 'Empty cart, insufficient stock, or unavailable product' })
+  @ApiResponse({
+    status: 201,
+    description: 'Order created',
+    type: OrderResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Empty cart, insufficient stock, or unavailable product',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — USER role required' })
   async checkout(
@@ -55,7 +64,11 @@ export class OrdersController {
   @Get('my-orders')
   @Roles(Role.USER)
   @ApiOperation({ summary: 'Get all orders for the authenticated user' })
-  @ApiResponse({ status: 200, description: 'Orders retrieved', type: [OrderResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Orders retrieved',
+    type: [OrderResponseDto],
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden — USER role required' })
   async getMyOrders(
@@ -70,9 +83,16 @@ export class OrdersController {
   @Get(':id')
   @Roles(Role.USER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Get a specific order by ID' })
-  @ApiResponse({ status: 200, description: 'Order retrieved', type: OrderResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Order retrieved',
+    type: OrderResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden — cannot access another user\'s order' })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden — cannot access another user's order",
+  })
   @ApiResponse({ status: 404, description: 'Order not found' })
   async getOrderById(
     @Param('id', ParseUUIDPipe) id: string,
@@ -80,6 +100,36 @@ export class OrdersController {
     @CurrentUser('role') userRole: Role,
   ): Promise<OrderResponseDto> {
     const order = await this.ordersService.getOrderById(id, userId, userRole);
+    return OrderResponseDto.from(order);
+  }
+
+  // ─── Cancel Order ─────────────────────────────────────────────────────────
+
+  @Patch(':id/cancel')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.USER)
+  @ApiOperation({ summary: 'Cancel an order' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order cancelled',
+    type: OrderResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Order status does not allow cancellation',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden — cannot cancel another user's order",
+  })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  async cancelOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CancelOrderDto,
+    @CurrentUser('id') userId: string,
+  ): Promise<OrderResponseDto> {
+    const order = await this.ordersService.cancelOrder(id, userId, dto.reason);
     return OrderResponseDto.from(order);
   }
 }
