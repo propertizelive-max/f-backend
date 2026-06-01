@@ -14,7 +14,9 @@ import {
   IsUUID,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { ProductImageDto } from './product-image.dto';
 import { ProductStatus } from '../enums/product-status.enum';
 
 export class CreateProductDto {
@@ -160,17 +162,16 @@ export class CreateProductDto {
   categoryId: string;
 
   @ApiProperty({
-    type: [String],
-    example: ['uploads/products/img1.webp', 'uploads/products/img2.webp'],
+    type: [ProductImageDto],
     description:
-      'Product image URLs/paths. First image is the thumbnail. Min 1, max 10.',
+      'Product images. Min 1, max 10. At most one DIAGRAM type allowed.',
     minItems: 1,
     maxItems: 10,
   })
   @IsArray()
   @ArrayMinSize(1, { message: 'At least one image is required.' })
   @ArrayMaxSize(10, { message: 'A product may have at most 10 images.' })
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  imageUrls: string[];
+  @ValidateNested({ each: true })
+  @Type(() => ProductImageDto)
+  images: ProductImageDto[];
 }

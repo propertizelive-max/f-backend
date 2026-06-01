@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type, plainToInstance } from 'class-transformer';
 import { Product } from '../entity/product.entity';
+import { ProductImageResponseDto } from './product-image-response.dto';
 import { ProductStatus } from '../enums/product-status.enum';
 
 @Exclude()
@@ -88,13 +89,10 @@ export class ProductResponseDto {
   @Expose()
   warranty: string | null;
 
-  @ApiProperty({
-    type: [String],
-    example: ['uploads/products/img1.webp', 'uploads/products/img2.webp'],
-    description: 'Product image URLs. First image is the thumbnail.',
-  })
+  @ApiProperty({ type: [ProductImageResponseDto] })
   @Expose()
-  imageUrls: string[];
+  @Type(() => ProductImageResponseDto)
+  images: ProductImageResponseDto[];
 
   @ApiProperty()
   @Expose()

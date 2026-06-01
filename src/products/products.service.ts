@@ -10,9 +10,12 @@ import { Repository } from 'typeorm';
 import { Category } from '../categories/entity/category.entity';
 import { PaginatedResponse } from '../common/interfaces/paginated-response.interface';
 import { CreateProductDto } from './dto/create-product.dto';
+import { ProductImageDto } from './dto/product-image.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductImage } from './entity/product-image.entity';
 import { Product } from './entity/product.entity';
+import { ProductImageType } from './enums/product-image-type.enum';
 import { ProductStatus } from './enums/product-status.enum';
 
 @Injectable()
@@ -24,6 +27,8 @@ export class ProductsService {
     private readonly productRepo: Repository<Product>,
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
+    @InjectRepository(ProductImage)
+    private readonly imageRepo: Repository<ProductImage>,
   ) {}
 
   async create(dto: CreateProductDto, adminId: string): Promise<Product> {
@@ -52,12 +57,15 @@ export class ProductsService {
       style: dto.style ?? null,
       careInstructions: dto.careInstructions ?? null,
       warranty: dto.warranty ?? null,
-      imageUrls: [...new Set(dto.imageUrls)],
       categoryId: dto.categoryId,
       createdBy: adminId,
     });
 
     const saved = await this.productRepo.save(product);
+
+    const imageEntities = this.buildImageEntities(saved.id, dto.images);
+    await this.imageRepo.save(imageEntities);
+
     this.logger.log(`Product created: ${saved.id} — "${saved.title}"`);
     return this.findOneOrFail(saved.id);
   }
@@ -68,12 +76,16 @@ export class ProductsService {
   ): Promise<PaginatedResponse<Product>> {
     const qb = this.productRepo
       .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category');
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.images', 'images');
 
     if (!isAdmin) {
       qb.andWhere('product.isActive = true').andWhere(
         'product.status = :pubStatus',
-        { pubStatus: ProductStatus.PUBLISHED },
+        {
+          pubStatus: ProductStatus.PUBLISHED,
+          active: ProductStatus.ACTIVE,
+        },
       );
     } else {
       if (query.isActive !== undefined) {
@@ -125,6 +137,7 @@ export class ProductsService {
       sortFields[query.sortBy ?? 'createdAt'] ?? 'product.createdAt';
 
     qb.orderBy(orderColumn, query.order ?? 'DESC')
+      .addOrderBy('images.sortOrder', 'ASC')
       .skip(query.skip)
       .take(query.limit);
 
@@ -136,12 +149,14 @@ export class ProductsService {
     const qb = this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.images', 'images')
+      .orderBy('images.sortOrder', 'ASC')
       .where('product.id = :id', { id });
 
     if (!isAdmin) {
       qb.andWhere('product.isActive = true').andWhere(
         'product.status = :status',
-        { status: ProductStatus.PUBLISHED },
+        { status: ProductStatus.PUBLISHED, active: ProductStatus.ACTIVE },
       );
     }
 
@@ -203,11 +218,16 @@ export class ProductsService {
     if (dto.careInstructions !== undefined)
       product.careInstructions = dto.careInstructions ?? null;
     if (dto.warranty !== undefined) product.warranty = dto.warranty ?? null;
-    if (dto.imageUrls !== undefined)
-      product.imageUrls = [...new Set(dto.imageUrls)];
     if (dto.categoryId !== undefined) product.categoryId = dto.categoryId;
 
     const saved = await this.productRepo.save(product);
+
+    if (dto.images !== undefined) {
+      await this.imageRepo.delete({ productId: saved.id });
+      const imageEntities = this.buildImageEntities(saved.id, dto.images);
+      await this.imageRepo.save(imageEntities);
+    }
+
     this.logger.log(`Product updated: ${saved.id}`);
     return this.findOneOrFail(saved.id);
   }
@@ -238,10 +258,42 @@ export class ProductsService {
     return this.findOneOrFail(id);
   }
 
+  private buildImageEntities(
+    productId: string,
+    dtos: ProductImageDto[],
+  ): ProductImage[] {
+    const seen = new Set<string>();
+    const deduped = dtos.filter((img) => {
+      if (seen.has(img.imageUrl)) return false;
+      seen.add(img.imageUrl);
+      return true;
+    });
+
+    const diagramCount = deduped.filter(
+      (img) => img.imageType === ProductImageType.DIAGRAM,
+    ).length;
+    if (diagramCount > 1) {
+      throw new BadRequestException(
+        'A product may have at most one DIAGRAM image.',
+      );
+    }
+
+    return deduped.map((img, index) =>
+      this.imageRepo.create({
+        productId,
+        imageUrl: img.imageUrl,
+        imageType: img.imageType,
+        sortOrder: img.sortOrder ?? index,
+      }),
+    );
+  }
+
   private async findOneOrFail(id: string): Promise<Product> {
     const product = await this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.images', 'images')
+      .orderBy('images.sortOrder', 'ASC')
       .where('product.id = :id', { id })
       .getOne();
     if (!product) {

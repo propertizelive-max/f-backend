@@ -6,10 +6,12 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Category } from '../../categories/entity/category.entity';
+import { ProductImage } from './product-image.entity';
 import { ProductStatus } from '../enums/product-status.enum';
 
 @Entity('products')
@@ -103,8 +105,8 @@ export class Product {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @Column({ type: 'text', array: true, default: '{}' })
-  imageUrls: string[];
+  @OneToMany(() => ProductImage, (image) => image.product, { cascade: true })
+  images: ProductImage[];
 
   @Index()
   @Column({ type: 'uuid' })

@@ -13,6 +13,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { Category } from './categories/entity/category.entity';
 import { ProductsModule } from './products/products.module';
 import { Product } from './products/entity/product.entity';
+import { ProductImage } from './products/entity/product-image.entity';
 import { CartModule } from './cart/cart.module';
 import { Cart } from './cart/entity/cart.entity';
 import { CartItem } from './cart/entity/cart-item.entity';
@@ -40,6 +41,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
           Media,
           Category,
           Product,
+          ProductImage,
           Cart,
           CartItem,
           Order,
