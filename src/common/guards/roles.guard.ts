@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from '../enums/role.enum';
@@ -26,7 +27,7 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest<{ user: JwtUser }>();
 
     if (!user) {
-      throw new ForbiddenException('Access denied. Authentication required.');
+      throw new UnauthorizedException('Authentication required.');
     }
 
     const hasRole = requiredRoles.some((role) => user.role === role);
