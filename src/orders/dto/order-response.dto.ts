@@ -9,6 +9,10 @@ export class OrderItemResponseDto {
   @ApiProperty() id: string;
   @ApiProperty() productId: string;
   @ApiProperty() productTitle: string;
+  @ApiPropertyOptional({ nullable: true, type: String }) productImage: string | null;
+  @ApiPropertyOptional({ nullable: true, type: String }) productSku: string | null;
+  @ApiPropertyOptional({ nullable: true, type: String }) productColor: string | null;
+  @ApiPropertyOptional({ nullable: true, type: String }) productCategoryName: string | null;
   @ApiProperty() quantity: number;
   @ApiProperty() price: number;
   @ApiProperty() totalPrice: number;
@@ -17,7 +21,11 @@ export class OrderItemResponseDto {
     const dto = new OrderItemResponseDto();
     dto.id = item.id;
     dto.productId = item.productId;
-    dto.productTitle = item.product?.title ?? '';
+    dto.productTitle = item.productTitle ?? item.product?.title ?? '[Product Deleted]';
+    dto.productImage = item.productImage ?? null;
+    dto.productSku = item.productSku ?? null;
+    dto.productColor = item.productColor ?? item.product?.color ?? null;
+    dto.productCategoryName = item.productCategoryName ?? item.product?.category?.name ?? null;
     dto.quantity = item.quantity;
     dto.price = item.price;
     dto.totalPrice = item.totalPrice;

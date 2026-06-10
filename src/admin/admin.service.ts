@@ -12,6 +12,8 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { AdminOrderFilterDto } from './dto/admin-order-filter.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from '../orders/enums/order-status.enum';
+import { OrderItemsResponseDto } from './dto/order-items-response.dto';
+import { AdminOrderDetailDto } from './dto/admin-order-detail.dto';
 
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.PENDING]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
@@ -135,17 +137,57 @@ export class AdminService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async getAdminOrderById(id: string) {
-    const order = await this.orderRepository.findOne({
-      where: { id },
-      relations: { user: true, items: { product: true } },
-    });
+  async getAdminOrderById(id: string): Promise<AdminOrderDetailDto> {
+    const order = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('order.items', 'items')
+      .leftJoinAndSelect('items.product', 'product')
+      .leftJoinAndSelect('product.category', 'category')
+      .where('order.id = :id', { id })
+      .withDeleted()
+      .getOne();
 
     if (!order) {
       throw new NotFoundException(`Order with id ${id} not found`);
     }
 
-    return order;
+    return AdminOrderDetailDto.from(order);
+  }
+
+  async getOrderItems(orderId: string): Promise<OrderItemsResponseDto> {
+    const order = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.items', 'items')
+      .leftJoinAndSelect('items.product', 'product')
+      .leftJoinAndSelect('product.category', 'category')
+      .where('order.id = :orderId', { orderId })
+      .withDeleted()
+      .getOne();
+
+    if (!order) {
+      throw new NotFoundException(`Order with id ${orderId} not found`);
+    }
+
+    if (!order.items.length) {
+      throw new NotFoundException(`No items found for this order`);
+    }
+
+    return {
+      orderId: order.id,
+      totalItems: order.items.length,
+      items: order.items.map((item) => ({
+        productId: item.productId,
+        productTitle: item.productTitle ?? item.product?.title ?? '[Product Deleted]',
+        productImage: item.productImage ?? null,
+        productSku: item.productSku ?? null,
+        productColor: item.productColor ?? item.product?.color ?? null,
+        productCategoryName: item.productCategoryName ?? item.product?.category?.name ?? null,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        totalPrice: item.totalPrice,
+      })),
+    };
   }
 
   async updateOrderStatus(id: string, dto: UpdateOrderStatusDto) {

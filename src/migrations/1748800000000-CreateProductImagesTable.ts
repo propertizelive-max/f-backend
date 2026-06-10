@@ -6,12 +6,15 @@ export class CreateProductImagesTable1748800000000
   name = 'CreateProductImagesTable1748800000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `CREATE TYPE "product_image_type_enum" AS ENUM ('GALLERY', 'DIAGRAM')`,
-    );
+    await queryRunner.query(`
+      DO $$ BEGIN
+        CREATE TYPE "product_image_type_enum" AS ENUM ('GALLERY', 'DIAGRAM');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `);
 
     await queryRunner.query(`
-      CREATE TABLE "product_images" (
+      CREATE TABLE IF NOT EXISTS "product_images" (
         "id"          uuid                        NOT NULL DEFAULT gen_random_uuid(),
         "productId"   uuid                        NOT NULL,
         "imageUrl"    text                        NOT NULL,
@@ -28,28 +31,35 @@ export class CreateProductImagesTable1748800000000
     `);
 
     await queryRunner.query(
-      `CREATE INDEX "IDX_product_images_productId" ON "product_images" ("productId")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_product_images_productId" ON "product_images" ("productId")`,
     );
 
-    // Migrate existing imageUrls array → individual product_images rows (all GALLERY, order preserved)
+    // Migrate existing imageUrls array → individual product_images rows (only if imageUrls column still exists)
     await queryRunner.query(`
-      INSERT INTO product_images ("id", "productId", "imageUrl", "imageType", "sortOrder", "createdAt", "updatedAt")
-      SELECT
-        gen_random_uuid(),
-        p.id,
-        img.url,
-        'GALLERY'::"product_image_type_enum",
-        (img.ord - 1)::int,
-        NOW(),
-        NOW()
-      FROM products p
-      CROSS JOIN LATERAL unnest(p."imageUrls") WITH ORDINALITY AS img(url, ord)
-      WHERE p."deletedAt" IS NULL
-        AND array_length(p."imageUrls", 1) > 0
+      DO $$ BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'products' AND column_name = 'imageUrls'
+        ) THEN
+          INSERT INTO product_images ("id", "productId", "imageUrl", "imageType", "sortOrder", "createdAt", "updatedAt")
+          SELECT
+            gen_random_uuid(),
+            p.id,
+            img.url,
+            'GALLERY'::"product_image_type_enum",
+            (img.ord - 1)::int,
+            NOW(),
+            NOW()
+          FROM products p
+          CROSS JOIN LATERAL unnest(p."imageUrls") WITH ORDINALITY AS img(url, ord)
+          WHERE p."deletedAt" IS NULL
+            AND array_length(p."imageUrls", 1) > 0;
+        END IF;
+      END $$
     `);
 
     await queryRunner.query(
-      `ALTER TABLE "products" DROP COLUMN "imageUrls"`,
+      `ALTER TABLE "products" DROP COLUMN IF EXISTS "imageUrls"`,
     );
   }
 

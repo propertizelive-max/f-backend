@@ -18,6 +18,8 @@ import { AdminOrderFilterDto } from './dto/admin-order-filter.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { JwtUser } from '../common/decorators/current-user.decorator';
+import { OrderItemsResponseDto } from './dto/order-items-response.dto';
+import { AdminOrderDetailDto } from './dto/admin-order-detail.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -52,8 +54,16 @@ export class AdminController {
 
   @Get('orders/:id')
   @Roles(Role.ADMIN, Role.MANAGER)
-  getOrderById(@Param('id', ParseUUIDPipe) id: string) {
+  getOrderById(@Param('id', ParseUUIDPipe) id: string): Promise<AdminOrderDetailDto> {
     return this.adminService.getAdminOrderById(id);
+  }
+
+  @Get('orders/:orderId/items')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  getOrderItems(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+  ): Promise<OrderItemsResponseDto> {
+    return this.adminService.getOrderItems(orderId);
   }
 
   @Patch('orders/:id/status')

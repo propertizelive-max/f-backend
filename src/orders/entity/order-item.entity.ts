@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -17,27 +18,43 @@ const decimalTransformer = {
 @Entity('order_items')
 export class OrderItem {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
+  @Index()
   @Column({ type: 'uuid' })
-  orderId: string;
+  orderId!: string;
 
   @ManyToOne(() => Order, (order) => order.items, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'orderId' })
-  order: Order;
+  order!: Order;
 
   @Column({ type: 'uuid' })
-  productId: string;
+  productId!: string;
 
   @ManyToOne(() => Product, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'productId' })
-  product: Product;
+  product!: Product;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  productTitle!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  productImage!: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  productSku!: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  productColor!: string | null;
+
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  productCategoryName!: string | null;
 
   @Column({ type: 'int' })
-  quantity: number;
+  quantity!: number;
 
   @Column({
     type: 'decimal',
@@ -45,7 +62,7 @@ export class OrderItem {
     scale: 2,
     transformer: decimalTransformer,
   })
-  price: number;
+  price!: number;
 
   @Column({
     type: 'decimal',
@@ -53,8 +70,8 @@ export class OrderItem {
     scale: 2,
     transformer: decimalTransformer,
   })
-  totalPrice: number;
+  totalPrice!: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

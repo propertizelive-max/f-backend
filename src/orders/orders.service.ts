@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { CartService } from '../cart/cart.service';
 import { CartItem } from '../cart/entity/cart-item.entity';
@@ -82,6 +82,14 @@ export class OrdersService {
     }
     const totalAmount = productAmount + this.deliveryCharge;
 
+    const productIds = cart.items.map((i) => i.productId);
+    const fullProducts = await this.productRepository.find({
+      where: { id: In(productIds) },
+      relations: { images: true, category: true },
+      order: { images: { sortOrder: 'ASC' } },
+    });
+    const productMap = new Map(fullProducts.map((p) => [p.id, p]));
+
     const order = await this.dataSource.transaction(async (manager) => {
       const savedOrder = await manager.getRepository(Order).save(
         manager.getRepository(Order).create({
@@ -105,12 +113,18 @@ export class OrdersService {
 
       const orderItems = cart.items.map((item) => {
         const unitPrice = item.product.discountPrice ?? item.product.price;
+        const full = productMap.get(item.productId);
         return manager.getRepository(OrderItem).create({
           orderId: savedOrder.id,
           productId: item.productId,
           quantity: item.quantity,
           price: unitPrice,
           totalPrice: unitPrice * item.quantity,
+          productTitle: full?.title ?? item.product.title,
+          productImage: full?.images?.[0]?.imageUrl ?? null,
+          productSku: full?.sku ?? null,
+          productColor: full?.color ?? null,
+          productCategoryName: full?.category?.name ?? null,
         });
       });
       await manager.getRepository(OrderItem).save(orderItems);
