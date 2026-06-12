@@ -17,8 +17,21 @@ async function bootstrap() {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(cookieParser());
 
+  const allowedOrigins = [
+    process.env.FRONTEND_HOST,
+    process.env.FRONTEND_ADMIN_HOST,
+  ]
+    .filter(Boolean)
+    .map((o) => o!.replace(/^["']|["']$/g, '').trim());
+
   app.enableCors({
-    origin: process.env.FRONTEND_HOST,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked: ${origin}`));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

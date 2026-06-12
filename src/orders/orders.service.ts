@@ -62,7 +62,8 @@ export class OrdersService {
         );
       }
 
-      if (!product.isActive || product.status !== ProductStatus.ACTIVE) {
+      const purchasable = [ProductStatus.PUBLISHED, ProductStatus.ACTIVE];
+      if (!product.isActive || !purchasable.includes(product.status)) {
         throw new BadRequestException(
           `Product "${product.title}" is no longer available for purchase.`,
         );

@@ -146,7 +146,8 @@ export class CartService {
       throw new NotFoundException(`Product with ID "${productId}" not found.`);
     }
 
-    if (!product.isActive || product.status !== ProductStatus.ACTIVE) {
+    const purchasable = [ProductStatus.PUBLISHED, ProductStatus.ACTIVE];
+    if (!product.isActive || !purchasable.includes(product.status)) {
       throw new BadRequestException(
         `Product "${product.title}" is not available for purchase.`,
       );
