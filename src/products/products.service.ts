@@ -74,56 +74,55 @@ export class ProductsService {
     query: ProductQueryDto,
     isAdmin = false,
   ): Promise<PaginatedResponse<Product>> {
-    const qb = this.productRepo
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.images', 'images');
+    const baseQb = this.productRepo.createQueryBuilder('product');
 
     if (!isAdmin) {
-      qb.andWhere('product.isActive = true').andWhere(
-        'product.status = :pubStatus',
-        {
-          pubStatus: ProductStatus.PUBLISHED,
-          active: ProductStatus.ACTIVE,
-        },
-      );
+      baseQb
+        .andWhere('product.isActive = true')
+        .andWhere('product.status IN (:...statuses)', {
+          statuses: [ProductStatus.PUBLISHED, ProductStatus.ACTIVE],
+        });
     } else {
       if (query.isActive !== undefined) {
-        qb.andWhere('product.isActive = :isActive', {
+        baseQb.andWhere('product.isActive = :isActive', {
           isActive: query.isActive,
         });
       }
       if (query.status) {
-        qb.andWhere('product.status = :status', { status: query.status });
+        baseQb.andWhere('product.status = :status', { status: query.status });
       }
     }
 
     if (query.search) {
       const term = `%${query.search.toLowerCase()}%`;
-      qb.andWhere(
+      baseQb.andWhere(
         '(LOWER(product.title) LIKE :term OR LOWER(product.description) LIKE :term)',
         { term },
       );
     }
 
     if (query.categoryId) {
-      qb.andWhere('product.categoryId = :categoryId', {
+      baseQb.andWhere('product.categoryId = :categoryId', {
         categoryId: query.categoryId,
       });
     }
 
     if (query.isFeatured !== undefined) {
-      qb.andWhere('product.isFeatured = :isFeatured', {
+      baseQb.andWhere('product.isFeatured = :isFeatured', {
         isFeatured: query.isFeatured,
       });
     }
 
     if (query.minPrice !== undefined) {
-      qb.andWhere('product.price >= :minPrice', { minPrice: query.minPrice });
+      baseQb.andWhere('product.price >= :minPrice', {
+        minPrice: query.minPrice,
+      });
     }
 
     if (query.maxPrice !== undefined) {
-      qb.andWhere('product.price <= :maxPrice', { maxPrice: query.maxPrice });
+      baseQb.andWhere('product.price <= :maxPrice', {
+        maxPrice: query.maxPrice,
+      });
     }
 
     const sortFields: Record<string, string> = {
@@ -136,13 +135,40 @@ export class ProductsService {
     const orderColumn =
       sortFields[query.sortBy ?? 'createdAt'] ?? 'product.createdAt';
 
-    qb.orderBy(orderColumn, query.order ?? 'DESC')
-      .addOrderBy('images.sortOrder', 'ASC')
-      .skip(query.skip)
-      .take(query.limit);
+    // Step 1 & 4: get total count and paginated IDs on products only (no join)
+    const total = await baseQb.getCount();
 
-    const [data, total] = await qb.getManyAndCount();
-    return { data, total, page: query.page, limit: query.limit };
+    const paginatedIds = await baseQb
+      .clone()
+      .select('product.id', 'id')
+      .orderBy(orderColumn, query.order ?? 'DESC')
+      .skip(query.skip)
+      .take(query.limit)
+      .getRawMany<{ id: string }>();
+
+    if (paginatedIds.length === 0) {
+      return { data: [], total, page: query.page, limit: query.limit };
+    }
+
+    const ids = paginatedIds.map((row) => row.id);
+
+    // Step 3: fetch full products with relations for the resolved IDs only
+    const products = await this.productRepo
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.images', 'images')
+      .where('product.id IN (:...ids)', { ids })
+      .orderBy(orderColumn, query.order ?? 'DESC')
+      .addOrderBy('images.sortOrder', 'ASC')
+      .getMany();
+
+    // Preserve the paginated order returned by the ID query
+    const orderMap = new Map(ids.map((id, i) => [id, i]));
+    products.sort(
+      (a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0),
+    );
+
+    return { data: products, total, page: query.page, limit: query.limit };
   }
 
   async findOne(id: string, isAdmin = false): Promise<Product> {
@@ -155,8 +181,8 @@ export class ProductsService {
 
     if (!isAdmin) {
       qb.andWhere('product.isActive = true').andWhere(
-        'product.status = :status',
-        { status: ProductStatus.PUBLISHED, active: ProductStatus.ACTIVE },
+        'product.status IN (:...statuses)',
+        { statuses: [ProductStatus.PUBLISHED, ProductStatus.ACTIVE] },
       );
     }
 
