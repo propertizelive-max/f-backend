@@ -21,6 +21,8 @@ import { OrdersModule } from './orders/orders.module';
 import { Order } from './orders/entity/order.entity';
 import { OrderItem } from './orders/entity/order-item.entity';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ContactModule } from './contact/contact.module';
+import { Contact } from './contact/entity/contact.entity';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
           CartItem,
           Order,
           OrderItem,
+          Contact,
         ],
         synchronize: true, // disable in production
       }),
@@ -60,6 +63,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     CartModule,
     OrdersModule,
     AnalyticsModule,
+    ContactModule,
   ],
   controllers: [AppController],
   providers: [AppService],
