@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -23,6 +25,7 @@ import { OrderItem } from './orders/entity/order-item.entity';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ContactModule } from './contact/contact.module';
 import { Contact } from './contact/entity/contact.entity';
+import { ForgotPassword } from './auth/entity/forgot-password.entity';
 
 @Module({
   imports: [
@@ -49,11 +52,18 @@ import { Contact } from './contact/entity/contact.entity';
           Order,
           OrderItem,
           Contact,
+          ForgotPassword,
         ],
         synchronize: true, // disable in production
       }),
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     UserModule,
     AuthModule,
     AdminModule,
@@ -66,6 +76,12 @@ import { Contact } from './contact/entity/contact.entity';
     ContactModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

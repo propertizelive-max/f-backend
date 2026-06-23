@@ -30,6 +30,8 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post('upload')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @UseInterceptors(FileInterceptor('file', multerOptions))
   uploadSingle(
     @UploadedFile() file: Express.Multer.File,
@@ -39,6 +41,8 @@ export class MediaController {
   }
 
   @Post('upload/bulk')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @UseInterceptors(FilesInterceptor('files', MAX_BULK_FILES, multerOptions))
   uploadBulk(
     @UploadedFiles() files: Express.Multer.File[],

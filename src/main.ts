@@ -5,7 +5,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   // Disable the built-in 100 KB body-parser so we can set our own 10 MB limit
@@ -13,6 +15,13 @@ async function bootstrap() {
     bodyParser: false,
   });
 
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: {
+        policy: 'cross-origin',
+      },
+    }),
+  );
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(cookieParser());
@@ -47,6 +56,8 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Serve uploaded files at /uploads/<path> (supports subfolders like /uploads/categories/...)
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });

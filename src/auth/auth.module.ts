@@ -7,11 +7,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+import { UserModule } from '../user/user.module';
+import { ForgotPassword } from './entity/forgot-password.entity';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([User]),
+    UserModule,
+    TypeOrmModule.forFeature([User, ForgotPassword]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
 

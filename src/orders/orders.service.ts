@@ -1,12 +1,13 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { CartService } from '../cart/cart.service';
 import { CartItem } from '../cart/entity/cart-item.entity';
@@ -61,37 +62,56 @@ export class OrdersService {
           'One or more cart items reference a deleted product.',
         );
       }
-
-      const purchasable = [ProductStatus.PUBLISHED, ProductStatus.ACTIVE];
-      if (!product.isActive || !purchasable.includes(product.status)) {
-        throw new BadRequestException(
-          `Product "${product.title}" is no longer available for purchase.`,
-        );
-      }
-
-      if (product.stock < item.quantity) {
-        throw new BadRequestException(
-          `Insufficient stock for "${product.title}". Available: ${product.stock}, Requested: ${item.quantity}.`,
-        );
-      }
     }
 
-    let productAmount = 0;
-    for (const item of cart.items) {
-      const unitPrice = item.product.discountPrice ?? item.product.price;
-      productAmount += unitPrice * item.quantity;
-    }
-    const totalAmount = productAmount + this.deliveryCharge;
-
-    const productIds = cart.items.map((i) => i.productId);
-    const fullProducts = await this.productRepository.find({
-      where: { id: In(productIds) },
-      relations: { images: true, category: true },
-      order: { images: { sortOrder: 'ASC' } },
-    });
-    const productMap = new Map(fullProducts.map((p) => [p.id, p]));
+    const purchasableStatuses = [ProductStatus.PUBLISHED, ProductStatus.ACTIVE];
+    const sortedItems = [...cart.items].sort((a, b) =>
+      a.productId.localeCompare(b.productId),
+    );
 
     const order = await this.dataSource.transaction(async (manager) => {
+      let productAmount = 0;
+      const lockedProductMap = new Map<string, Product>();
+
+      for (const item of sortedItems) {
+        const lockedProduct = await manager
+          .getRepository(Product)
+          .createQueryBuilder('product')
+          .setLock('pessimistic_write')
+          .leftJoinAndSelect('product.images', 'images')
+          .leftJoinAndSelect('product.category', 'category')
+          .where('product.id = :id', { id: item.productId })
+          .orderBy('images.sortOrder', 'ASC')
+          .getOne();
+
+        if (!lockedProduct) {
+          throw new ConflictException(
+            'One or more cart items reference a deleted product.',
+          );
+        }
+
+        if (
+          !lockedProduct.isActive ||
+          !purchasableStatuses.includes(lockedProduct.status)
+        ) {
+          throw new ConflictException(
+            `Product "${lockedProduct.title}" is no longer available for purchase.`,
+          );
+        }
+
+        if (lockedProduct.stock < item.quantity) {
+          throw new ConflictException(
+            `Insufficient stock for "${lockedProduct.title}". Available: ${lockedProduct.stock}, Requested: ${item.quantity}.`,
+          );
+        }
+
+        const unitPrice = lockedProduct.discountPrice ?? lockedProduct.price;
+        productAmount += unitPrice * item.quantity;
+        lockedProductMap.set(item.productId, lockedProduct);
+      }
+
+      const totalAmount = productAmount + this.deliveryCharge;
+
       const savedOrder = await manager.getRepository(Order).save(
         manager.getRepository(Order).create({
           userId,
@@ -112,28 +132,28 @@ export class OrdersService {
         }),
       );
 
-      const orderItems = cart.items.map((item) => {
-        const unitPrice = item.product.discountPrice ?? item.product.price;
-        const full = productMap.get(item.productId);
+      const orderItems = sortedItems.map((item) => {
+        const lockedProduct = lockedProductMap.get(item.productId)!;
+        const unitPrice = lockedProduct.discountPrice ?? lockedProduct.price;
         return manager.getRepository(OrderItem).create({
           orderId: savedOrder.id,
           productId: item.productId,
           quantity: item.quantity,
           price: unitPrice,
           totalPrice: unitPrice * item.quantity,
-          productTitle: full?.title ?? item.product.title,
-          productImage: full?.images?.[0]?.imageUrl ?? null,
-          productSku: full?.sku ?? null,
-          productColor: full?.color ?? null,
-          productCategoryName: full?.category?.name ?? null,
+          productTitle: lockedProduct.title,
+          productImage: lockedProduct.images?.[0]?.imageUrl ?? null,
+          productSku: lockedProduct.sku,
+          productColor: lockedProduct.color,
+          productCategoryName: lockedProduct.category?.name ?? null,
         });
       });
       await manager.getRepository(OrderItem).save(orderItems);
 
-      for (const item of cart.items) {
-        await manager
-          .getRepository(Product)
-          .decrement({ id: item.productId }, 'stock', item.quantity);
+      for (const item of sortedItems) {
+        const lockedProduct = lockedProductMap.get(item.productId)!;
+        lockedProduct.stock -= item.quantity;
+        await manager.getRepository(Product).save(lockedProduct);
       }
 
       await manager.getRepository(CartItem).delete({ cartId: cart.id });
