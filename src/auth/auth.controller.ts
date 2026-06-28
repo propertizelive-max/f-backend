@@ -17,6 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Role } from '../common/enums/role.enum';
+import { HttpCode, HttpStatus } from '@nestjs/common';
 
 interface GoogleUser {
   id: string;
@@ -92,11 +93,33 @@ export class AuthController {
     return res.json({ access_token });
   }
 
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  logout(@Res({ passthrough: true }) res: Response) {
+    const isProduction =
+      this.configService.get<string>('NODE_ENV') === 'production';
+
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
+    });
+
+    return {
+      success: true,
+      message: 'Logged out successfully',
+    };
+  }
+
   @Post('forgot-password')
   @Throttle({ default: { limit: 3, ttl: 300000 } })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
   }
+
+
 
   @Post('reset-password')
   @Throttle({ default: { limit: 3, ttl: 300000 } })
@@ -112,6 +135,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
       maxAge: 30 * 60 * 1000, // 30 minutes — matches JWT expiry
     });
   }
